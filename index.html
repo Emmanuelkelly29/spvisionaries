@@ -409,10 +409,15 @@ import{initializeApp}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-ap
 import{getFirestore,collection,addDoc,getDocs,orderBy,query,serverTimestamp}
   from'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
-/* ══ PASTE FIREBASE CONFIG ══ */
-const cfg={apiKey:'YOUR_API_KEY',authDomain:'YOUR_PROJECT_ID.firebaseapp.com',
-  projectId:'YOUR_PROJECT_ID',storageBucket:'YOUR_PROJECT_ID.appspot.com',
-  messagingSenderId:'YOUR_SENDER_ID',appId:'YOUR_APP_ID'};
+/* ══ FIREBASE CONFIG ══ */
+const firebaseConfig = {
+  apiKey: "AIzaSyB6HiAAaf-_2hnRq-3Lb89MudRhFQo0-W8",
+  authDomain: "spvisionaries-d9da1.firebaseapp.com",
+  projectId: "spvisionaries-d9da1",
+  storageBucket: "spvisionaries-d9da1.firebasestorage.app",
+  messagingSenderId: "453354221553",
+  appId: "1:453354221553:web:12fb9a0d90a875bbbd5e50"
+};
 /* ═════════════════════════════ */
 
 let db;try{const a=initializeApp(cfg);db=getFirestore(a);}catch(e){console.warn(e.message);}
