@@ -422,18 +422,18 @@ import{getStorage,ref,uploadBytesResumable,getDownloadURL,deleteObject}from'http
 /* ══════════════════════════════════
    PASTE YOUR FIREBASE CONFIG BELOW
    ══════════════════════════════════ */
-const FC={
-  apiKey:"YOUR_API_KEY",
-  authDomain:"YOUR_PROJECT_ID.firebaseapp.com",
-  projectId:"YOUR_PROJECT_ID",
-  storageBucket:"YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId:"YOUR_SENDER_ID",
-  appId:"YOUR_APP_ID"
+const firebaseConfig = {
+  apiKey: "AIzaSyB6HiAAaf-_2hnRq-3Lb89MudRhFQo0-W8",
+  authDomain: "spvisionaries-d9da1.firebaseapp.com",
+  projectId: "spvisionaries-d9da1",
+  storageBucket: "spvisionaries-d9da1.firebasestorage.app",
+  messagingSenderId: "453354221553",
+  appId: "1:453354221553:web:12fb9a0d90a875bbbd5e50"
 };
 /* ══════════════════════════════════ */
 
 let db,st;
-try{const a=initializeApp(FC);db=getFirestore(a);st=getStorage(a);window._db=db;window._st=st;}catch(e){console.warn('[Firebase]',e.message);}
+try{const a=initializeApp(firebaseConfig);db=getFirestore(a);st=getStorage(a);window._db=db;window._st=st;}catch(e){console.warn('[Firebase]',e.message);}
 
 const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const escq=s=>String(s).replace(/'/g,"\'").replace(/"/g,'&quot;');
@@ -562,12 +562,28 @@ async function loadRevs(){
   if(!s)return;
   document.getElementById('st-rev').textContent=s.size;
   const g=document.getElementById('rev-grid');g.innerHTML=s.empty?'<div class="empty">No reviews yet.</div>':'';
-  s.forEach(d=>{const x=d.data(),c=document.createElement('div');c.className='rev-row';
-    c.innerHTML=`<div><div class="rev-name">${esc(x.name)}</div><div class="rev-stars">${'★'.repeat(x.stars)}<span style="color:#ddd">${'★'.repeat(5-x.stars)}</span></div><div class="rev-txt">&ldquo;${esc(x.text)}&rdquo;</div></div>
-      <button class="btn btn-r btn-sm" onclick="delRev('${d.id}')">🗑 Remove</button>`;
-    g.appendChild(c);});
+  s.forEach(d=>{
+    const x=d.data(),id=d.id,c=document.createElement('div');c.className='rev-row';
+    c.innerHTML=`<div><div class="rev-name">${esc(x.name)}</div><div class="rev-stars">${'★'.repeat(x.stars)}<span style="color:#ddd">${'★'.repeat(5-x.stars)}</span></div><div class="rev-txt">&ldquo;${esc(x.text)}&rdquo;</div></div>`;
+    if(x.status!=="approved"){
+      c.innerHTML+=`<button class="btn btn-a btn-sm" onclick="approveRev('${id}')">Approve</button>`;
+    }
+    c.innerHTML+=`<button class="btn btn-r btn-sm" onclick="delRev('${id}')">🗑 Remove</button>`;
+    if(x.status==="approved"){
+      c.innerHTML+=`<span class="appr">Approved</span>`;
+    }
+    g.appendChild(c);
+  });
 }
 window.loadRevs=loadRevs;
+window.approveRev = async function(id){
+  if(!db)return;
+  try{
+    await updateDoc(doc(db,'reviews',id),{status:'approved'});
+    toast('Review approved!');
+    loadRevs();
+  }catch(e){toast('Error: '+e.message,1);}
+}
 window.delRev=async function(id){
   if(!confirm('Remove this review?'))return;
   try{await deleteDoc(doc(db,'reviews',id));toast('Removed.');loadRevs();}catch(e){toast('Error: '+e.message,1);}
