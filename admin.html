@@ -417,7 +417,7 @@ img{display:block;max-width:100%}button{font-family:inherit;cursor:pointer}
 <script type="module">
 import{initializeApp}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import{getFirestore,collection,addDoc,getDocs,deleteDoc,doc,updateDoc,orderBy,query,serverTimestamp,setDoc,getDoc}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
-import{getStorage,ref,uploadBytesResumable,getDownloadURL,deleteObject}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js';
+
 
 /* ══════════════════════════════════
    PASTE YOUR FIREBASE CONFIG BELOW
@@ -432,8 +432,12 @@ const firebaseConfig = {
 };
 /* ══════════════════════════════════ */
 
-let db,st;
-try{const a=initializeApp(firebaseConfig);db=getFirestore(a);st=getStorage(a);window._db=db;window._st=st;}catch(e){console.warn('[Firebase]',e.message);}
+/* ── Cloudinary config ── */
+const CL_CLOUD  = 'dyd7ikpj6';
+const CL_PRESET = 'spvisionaries';
+
+let db,st=true; // st=true so existing if(db&&st) checks still pass
+try{const a=initializeApp(firebaseConfig);db=getFirestore(a);window._db=db;}catch(e){console.warn('[Firebase]',e.message);}
 
 const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const escq=s=>String(s).replace(/'/g,"\'").replace(/"/g,'&quot;');
@@ -451,9 +455,19 @@ async function up(path,file,progId,barId){
   const pb=barId?document.getElementById(barId):null;
   if(pr){pr.style.display='block';if(pb)pb.style.width='5%';}
   return new Promise((res,rej)=>{
-    const r=ref(st,path),t=uploadBytesResumable(r,file);
-    t.on('state_changed',snap=>{if(pb)pb.style.width=(snap.bytesTransferred/snap.totalBytes*88+5)+'%';},rej,
-      async()=>{if(pr){if(pb)pb.style.width='100%';setTimeout(()=>{pr.style.display='none';if(pb)pb.style.width='0';},550);}res(await getDownloadURL(r));});
+    const fd=new FormData();
+    fd.append('file',file);
+    fd.append('upload_preset',CL_PRESET);
+    const xhr=new XMLHttpRequest();
+    xhr.open('POST','https://api.cloudinary.com/v1_1/'+CL_CLOUD+'/image/upload');
+    xhr.upload.onprogress=e=>{if(pb&&e.lengthComputable)pb.style.width=(e.loaded/e.total*88+5)+'%';};
+    xhr.onload=function(){
+      if(pr){if(pb)pb.style.width='100%';setTimeout(()=>{pr.style.display='none';if(pb)pb.style.width='0';},550);}
+      try{const d=JSON.parse(xhr.responseText);if(d.secure_url)res(d.secure_url);else rej(new Error(d.error&&d.error.message||'Upload failed'));}
+      catch(e){rej(e);}
+    };
+    xhr.onerror=()=>rej(new Error('Network error during upload'));
+    xhr.send(fd);
   });
 }
 
@@ -520,7 +534,7 @@ window.delBA=async function(id,bp,ap){
   if(!confirm('Delete this entry?'))return;
   try{
     await deleteDoc(doc(db,'works',id));
-    [bp,ap].forEach(async p=>{if(p)try{await deleteObject(ref(st,p));}catch(_){}});
+    /* old storage refs not needed with Cloudinary */
     toast('Deleted.');loadBA();
   }catch(e){toast('Error: '+e.message,1);}
 };
@@ -552,7 +566,7 @@ window.addGal=async function(){
 };
 window.delGal=async function(id,path){
   if(!confirm('Remove this photo?'))return;
-  try{await deleteDoc(doc(db,'gallery',id));if(path)try{await deleteObject(ref(st,path));}catch(_){}toast('Removed.');loadGal();}catch(e){toast('Error: '+e.message,1);}
+  try{await deleteDoc(doc(db,'gallery',id));toast('Removed.');loadGal();}catch(e){toast('Error: '+e.message,1);}
 };
 
 /* ─ REVIEWS ─ */
