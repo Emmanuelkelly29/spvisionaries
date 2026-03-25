@@ -407,7 +407,7 @@ footer p{margin-bottom:.25rem}footer a{color:var(--gold)}
 
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script type="module">
 import{initializeApp}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import{getFirestore,collection,addDoc,getDocs,orderBy,query,serverTimestamp}
+import{getFirestore,collection,addDoc,getDocs,getDoc,doc,orderBy,query,serverTimestamp}
   from'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 /* ══ FIREBASE CONFIG ══ */
@@ -425,6 +425,45 @@ let db;try{const a=initializeApp(firebaseConfig);db=getFirestore(a);}catch(e){co
 const E=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 function T(m,e){const t=document.getElementById('toast');t.textContent=m;t.className='toast'+(e?' err':'');setTimeout(()=>t.classList.add('show'),10);setTimeout(()=>t.classList.remove('show'),3500);}
 
+async function loadImages(){
+  if(!db)return;
+  try{
+    const imgDoc=await getDoc(doc(db,'settings','images'));
+    if(!imgDoc.exists())return;
+    const d=imgDoc.data();
+    // Map of Firestore key -> img element ID in index.html
+    const keyToId={
+      svc0:'svc0-img', svc1:'svc1-img', svc2:'svc2-img',
+      why:'why-img',
+      ba0b:'ba0b-img', ba0a:'ba0a-img',
+      ba1b:'ba1b-img', ba1a:'ba1a-img',
+      ba2b:'ba2b-img', ba2a:'ba2a-img',
+      gal0:'gal0-img', gal1:'gal1-img', gal2:'gal2-img', gal3:'gal3-img',
+      gal4:'gal4-img', gal5:'gal5-img', gal6:'gal6-img', gal7:'gal7-img',
+      gal8:'gal8-img', gal9:'gal9-img', gal10:'gal10-img', gal11:'gal11-img'
+    };
+    // Update hero background
+    if(d.hero){
+      const heroEl=document.getElementById('home');
+      if(heroEl)heroEl.style.backgroundImage='url('+d.hero+')';
+    }
+    Object.entries(keyToId).forEach(([k,elId])=>{
+      if(!d[k])return;
+      const el=document.getElementById(elId);
+      if(!el)return;
+      el.src=d[k];
+    });
+    // Hero text
+    const heroDoc=await getDoc(doc(db,'settings','heroText'));
+    if(heroDoc.exists()){
+      const h=heroDoc.data();
+      const h1=document.getElementById('hero-h1');
+      const p=document.getElementById('hero-para');
+      if(h1&&h.h1)h1.textContent=h.h1;
+      if(p&&h.para)p.textContent=h.para;
+    }
+  }catch(_){}
+}
 async function loadBA(){
   if(!db)return;
   const s=await getDocs(query(collection(db,'works'),orderBy('createdAt','desc'))).catch(()=>null);
@@ -476,4 +515,7 @@ window.SUB=async function(){
   }catch(e){T('Error: '+e.message,1);}
   btn.disabled=false;btn.textContent='Submit Review ★';
 };
-window.addEventListener('load',()=>{loadBA();loadGal();lo
+window.addEventListener('load',()=>{loadImages();loadBA();loadGal();loadRevs();});
+</script>
+</body>
+</html>

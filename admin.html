@@ -640,9 +640,10 @@ window.saveSvc=async function(){
   SVCS[i]={...SVCS[i],title,desc,ico};
   if(f){
     const r=new FileReader();r.onload=e=>{window.IMGS[SVCS[i].k]=e.target.result;renderSvcs();renderImgs();};r.readAsDataURL(f);
-    if(db&&st)up('services/svc'+i+'_'+Date.now(),f,null,null).then(u=>{window.IMGS[SVCS[i].k]=u;renderSvcs();renderImgs();}).catch(()=>{});
-  }
-  toast('Service updated ✅');cM('m-editsvc');renderSvcs();renderImgs();
+    toast('Uploading service image…');
+    if(db)up('services/svc'+i+'_'+Date.now(),f,null,null).then(u=>{window.IMGS[SVCS[i].k]=u;renderSvcs();renderImgs();saveImgURLToFirestore(SVCS[i].k,u);toast('Service image live on site ✅');}).catch(e=>toast('Upload error: '+e.message,1));
+  } else { toast('Service updated ✅'); }
+  cM('m-editsvc');renderSvcs();renderImgs();
 };
 
 /* ─ HERO ─ */
@@ -657,8 +658,9 @@ window.uploadHero=async function(){
   try{
     const path='settings/hero_'+Date.now(),url=await up(path,f,'hero-prog','hero-bar');
     await setDoc(doc(db,'settings','hero'),{imgURL:url,path,updatedAt:serverTimestamp()});
+    await saveImgURLToFirestore('hero',url);
     document.getElementById('hero-adm-img').src=url;window.IMGS.hero=url;
-    toast('Hero photo updated! 🎉');renderImgs();
+    toast('Hero photo updated & live on site! 🎉');renderImgs();
   }catch(e){toast('Error: '+e.message,1);}
 };
 window.saveHeroText=function(){
@@ -735,7 +737,8 @@ function renderImgs(){
       tf+='</div>';
     }
     const saveTF=r.fields&&r.fields.length?`<button class="btn btn-a btn-xs" onclick="saveImgTxt('${r.k}')">💾 Save Text</button>`:'';
-    const resetBtn=r.canReset?`<button class="btn btn-r btn-xs" onclick="resetImg('${r.k}')">🗑 Reset</button>`:'';
+    const hasCustomImg=!!(window.IMGS[r.k]&&!window.IMGS[r.k].startsWith('data:image/png;base64,/9j/4AAQ'));
+    const deleteBtn=`<button class="btn btn-r btn-xs" onclick="resetImg('${r.k}')">🗑 Delete</button>`;
     card.innerHTML=`
       <div class="img-card-photo" onclick="replaceImg('${r.k}')">
         <img src="${src}" loading="lazy" alt="${r.label}"/>
@@ -747,7 +750,7 @@ function renderImgs(){
         <div class="img-card-acts">
           <button class="btn btn-a btn-xs" onclick="replaceImg('${r.k}')">📷 Replace</button>
           ${saveTF}
-          ${resetBtn}
+          ${deleteBtn}
         </div>
       </div>`;
     g.appendChild(card);
@@ -771,6 +774,19 @@ window.saveImgTxt=function(k){
 };
 
 let _rKey=null;
+async function saveImgURLToFirestore(k,url){
+  if(!db)return;
+  // Save to settings/images so index.html can read it
+  const update={};update[k]=url;update['updatedAt']=serverTimestamp();
+  await setDoc(doc(db,'settings','images'),update,{merge:true}).catch(()=>{});
+  // Also save hero to its own doc for backward compat
+  if(k==='hero') await setDoc(doc(db,'settings','hero'),{imgURL:url,path:'images/'+k,updatedAt:serverTimestamp()},{merge:true}).catch(()=>{});
+}
+async function clearImgURLFromFirestore(k){
+  if(!db)return;
+  const update={};update[k]=null;
+  await setDoc(doc(db,'settings','images'),update,{merge:true}).catch(()=>{});
+}
 window.replaceImg=function(k){
   _rKey=k;
   const inp=document.createElement('input');inp.type='file';inp.accept='image/*';
@@ -780,20 +796,40 @@ window.replaceImg=function(k){
       window.IMGS[_rKey]=e.target.result;
       if(_rKey==='hero')document.getElementById('hero-adm-img').src=e.target.result;
       renderImgs();renderSvcs();
-      toast('Photo updated! Configure Firebase to make it permanent.');
-      if(window._db&&window._st)up('images/'+_rKey+'_'+Date.now(),f,null,null)
-        .then(u=>{window.IMGS[_rKey]=u;renderImgs();renderSvcs();toast('Saved to Firebase ✅');})
-        .catch(()=>{}); 
+      toast('Uploading photo to Cloudinary…');
+      up('images/'+_rKey+'_'+Date.now(),f,null,null)
+        .then(u=>{
+          window.IMGS[_rKey]=u;
+          renderImgs();renderSvcs();
+          if(_rKey==='hero') document.getElementById('hero-adm-img').src=u;
+          saveImgURLToFirestore(_rKey,u);
+          toast('Photo saved & live on site ✅');
+        })
+        .catch(e=>toast('Upload error: '+e.message,1));
     };r.readAsDataURL(f);
   };
   document.body.appendChild(inp);inp.click();setTimeout(()=>document.body.removeChild(inp),5000);
 };
-window.resetImg=function(k){if(!confirm('Reset this photo to the original?'))return;delete window.IMGS[k];renderImgs();toast('Reset to original.');}
+window.resetImg=async function(k){
+  if(!confirm('Delete this photo and restore the original placeholder?'))return;
+  delete window.IMGS[k];
+  renderImgs();
+  await clearImgURLFromFirestore(k);
+  toast('Photo removed — original restored ✅');
+};
 
 /* ─ LOAD FIREBASE SETTINGS ─ */
 (async function(){
   if(!db)return;
   try{
+    // Load all image URLs from settings/images
+    const imgDoc=await getDoc(doc(db,'settings','images'));
+    if(imgDoc.exists()){
+      const d=imgDoc.data();
+      Object.keys(d).forEach(k=>{if(k!=='updatedAt'&&d[k]){window.IMGS[k]=d[k];}});
+      if(d.hero)document.getElementById('hero-adm-img').src=d.hero;
+      renderImgs();renderSvcs();
+    }
     const hs=await getDoc(doc(db,'settings','hero'));
     if(hs.exists()&&hs.data().imgURL){document.getElementById('hero-adm-img').src=hs.data().imgURL;window.IMGS.hero=hs.data().imgURL;}
     const ht=await getDoc(doc(db,'settings','heroText'));
