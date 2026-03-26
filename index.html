@@ -24,23 +24,30 @@ img{display:block;max-width:100%}a{text-decoration:none}button{font-family:inher
 
 /* NAV */
 #nav{position:fixed;top:0;left:0;right:0;z-index:900;display:flex;align-items:center;
-  justify-content:space-between;padding:1.1rem 3rem;transition:all .3s}
-#nav.s{background:rgba(247,245,239,.97);backdrop-filter:blur(16px);
-  box-shadow:0 2px 14px rgba(28,58,14,.1);padding:.75rem 3rem}
+  justify-content:space-between;padding:.85rem 3rem;transition:all .3s;
+  background:linear-gradient(90deg,#1c3a0e 0%,#254d14 60%,#3a6b1e 100%);
+  box-shadow:0 2px 18px rgba(18,42,8,.45);border-bottom:2px solid rgba(200,168,75,.35)}
+#nav.s{background:linear-gradient(90deg,#152d0a 0%,#1e3f10 60%,#2e5618 100%);
+  box-shadow:0 2px 22px rgba(18,42,8,.55);padding:.7rem 3rem}
 .nl{display:flex;align-items:center;gap:.65rem;font-family:'Playfair Display',serif;
-  font-size:1.35rem;font-weight:900;color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.4);transition:color .3s}
-#nav.s .nl{color:var(--g1);text-shadow:none}
+  font-size:1.35rem;font-weight:900;color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.35);transition:color .3s}
+#nav.s .nl{color:#fff;text-shadow:0 1px 8px rgba(0,0,0,.3)}
 .nl img{width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,.5)}
 .nm{display:flex;gap:1.8rem;list-style:none}
-.nm a{font-size:.875rem;font-weight:600;color:rgba(255,255,255,.9);transition:color .2s}
-#nav.s .nm a{color:var(--txs)}
-.nm a:hover,.nm a:focus{color:var(--glt)}
-#nav.s .nm a:hover{color:var(--g3)}
+.nm a{font-size:.875rem;font-weight:600;color:rgba(255,255,255,.92);transition:color .2s;letter-spacing:.2px}
+#nav.s .nm a{color:rgba(255,255,255,.92)}
+.nm a:hover,.nm a:focus{color:var(--glt);text-shadow:0 0 12px rgba(232,201,106,.5)}
+#nav.s .nm a:hover{color:var(--glt)}
 .ncta{background:var(--gold)!important;color:var(--g1)!important;padding:.44rem 1.2rem;
   border-radius:50px;font-weight:700!important;box-shadow:0 2px 12px rgba(200,168,75,.4)}
+.nemail{background:rgba(255,255,255,.12)!important;color:#fff!important;padding:.4rem 1rem;
+  border-radius:50px;font-weight:600!important;font-size:.8rem!important;
+  border:1.5px solid rgba(255,255,255,.35)!important;transition:all .25s!important;
+  display:inline-flex;align-items:center;gap:.35rem}
+.nemail:hover{background:rgba(200,168,75,.25)!important;border-color:var(--gold)!important;color:var(--glt)!important}
 .hbg{display:none;flex-direction:column;gap:5px;background:none;border:none;padding:.25rem}
 .hbg span{width:22px;height:2px;background:#fff;border-radius:2px;display:block}
-#nav.s .hbg span{background:var(--g1)}
+#nav.s .hbg span{background:#fff}
 .mb{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:950;display:none}
 .mb.on{display:block}
 .md{position:fixed;top:0;right:-100%;width:72%;max-width:300px;height:100vh;z-index:960;
@@ -160,11 +167,11 @@ section{padding:5.5rem 1.5rem}
 
 /* GALLERY */
 #gallery{background:var(--white)}
-.gg{display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:220px;gap:12px;margin-top:2.5rem}
+.gg{display:grid;grid-template-columns:repeat(3,320px);grid-auto-rows:320px;gap:14px;margin-top:2.5rem;justify-content:center}
 .gc{border-radius:12px;overflow:hidden;position:relative;cursor:pointer}
 .gc img{width:100%;height:100%;object-fit:cover;transition:transform .5s;display:block}
 .gc:hover img{transform:scale(1.07)}
-.gc.tall{grid-row:span 2}.gc.wide{grid-column:span 2}
+.gc.tall{grid-row:span 1}.gc.wide{grid-column:span 1}
 .gcap{position:absolute;inset:0;background:linear-gradient(to top,rgba(18,42,8,.7),transparent 60%);
   display:flex;align-items:flex-end;padding:.9rem 1rem;opacity:0;transition:opacity .3s}
 .gc:hover .gcap{opacity:1}
@@ -244,13 +251,13 @@ footer p{margin-bottom:.25rem}footer a{color:var(--gold)}
   .cbg{grid-template-columns:1fr}
   .bag{grid-template-columns:1fr}
   .hst{gap:1.8rem;flex-wrap:wrap}
-  .gg{grid-template-columns:repeat(2,1fr)}
+  .gg{grid-template-columns:repeat(3,1fr);grid-auto-rows:280px}
   .gc.wide{grid-column:span 1}.gc.tall{grid-row:span 1}
 }
 @media(max-width:480px){
   section{padding:4rem 1rem}
   .hi h1{font-size:2.4rem}
-  .gg{grid-template-columns:1fr 1fr;grid-auto-rows:160px}
+  .gg{grid-template-columns:repeat(2,1fr);grid-auto-rows:200px}
 }
 </style>
 </head>
@@ -264,6 +271,7 @@ footer p{margin-bottom:.25rem}footer a{color:var(--gold)}
     <li><a href="#works">Before &amp; After</a></li>
     <li><a href="#gallery">Gallery</a></li>
     <li><a href="#reviews">Reviews</a></li>
+    <li><a href="mailto:spvisionariesllc@gmail.com?subject=Lawn%20Care%20Enquiry&body=Hi%2C%20I%27d%20like%20to%20get%20a%20free%20quote." class="nemail" target="_blank">✉️ Email Us</a></li>
     <li><a href="#contact" class="ncta">Free Quote</a></li>
   </ul>
   <button class="hbg" onclick="OM()"><span></span><span></span><span></span></button>
@@ -276,6 +284,8 @@ footer p{margin-bottom:.25rem}footer a{color:var(--gold)}
   <a href="#works" onclick="CM()">Before &amp; After</a>
   <a href="#gallery" onclick="CM()">Gallery</a>
   <a href="#reviews" onclick="CM()">Reviews</a>
+  <a href="mailto:spvisionariesllc@gmail.com?subject=Lawn%20Care%20Enquiry&body=Hi%2C%20I%27d%20like%20to%20get%20a%20free%20quote." onclick="CM()" target="_blank">✉️ Email Us</a>
+  <a href="https://meet.google.com/new" onclick="CM()" target="_blank">🎥 Google Meet</a>
   <a href="#contact" onclick="CM()">Free Quote</a>
 </div>
 
@@ -391,7 +401,8 @@ footer p{margin-bottom:.25rem}footer a{color:var(--gold)}
     <a href="sms:+12405862712?&body=Hi%2C%20I%27m%20interested%20in%20a%20free%20quote%20for%20lawn%20care." class="cb"><span class="cico">💬</span><div><strong>Text / SMS</strong><small>240-586-2712</small></div></a>
     <a href="https://wa.me/12405862712?text=Hi%2C%20I%27m%20interested%20in%20a%20free%20quote%20for%20lawn%20care." target="_blank" class="cb wp"><span class="cico">🟢</span><div><strong>WhatsApp</strong><small>240-586-2712</small></div></a>
     <a href="tel:+18177705200" class="cb"><span class="cico">📱</span><div><strong>Secondary Line</strong><small>817-770-5200</small></div></a>
-    <a href="/cdn-cgi/l/email-protection#0d7e7d7b647e6462636c7f64687e61616e4d6a606c6461236e6260" class="cb em"><span class="cico">✉️</span><div><strong>Email Us</strong><small><span class="__cf_email__" data-cfemail="255655534c564c4a4b44574c4056494946654248444c490b464a48">[email&#160;protected]</span></small></div></a>
+    <a href="mailto:spvisionariesllc@gmail.com?subject=Lawn%20Care%20Enquiry&body=Hi%2C%20I%27d%20like%20a%20free%20quote%20for%20lawn%20care%20services." class="cb em" target="_blank"><span class="cico">✉️</span><div><strong>Email Us</strong><small>spvisionariesllc@gmail.com</small></div></a>
+    <a href="https://meet.google.com/new" target="_blank" class="cb mt"><span class="cico">🎥</span><div><strong>Google Meet / Hangout</strong><small>Start a video call instantly</small></div></a>
     <a href="https://meet.google.com/new" target="_blank" class="cb mt"><span class="cico">🎥</span><div><strong>Google Meet</strong><small>Video Consultation</small></div></a>
   </div>
 </div></div></section>
@@ -400,12 +411,12 @@ footer p{margin-bottom:.25rem}footer a{color:var(--gold)}
   <div class="fn">🌿 S&amp;P Visionaries LLC</div>
   <div class="fl"></div>
   <p>Professional Lawn Care Services</p>
-  <p><a href="tel:+12405862712">240-586-2712</a> · <a href="/cdn-cgi/l/email-protection#ddaeadabb4aeb4b2b3bcafb4b8aeb1b1be9dbab0bcb4b1f3beb2b0"><span class="__cf_email__" data-cfemail="671417110e140e080906150e02140b0b0427000a060e0b4904080a">[email&#160;protected]</span></a></p>
+  <p><a href="tel:+12405862712">240-586-2712</a> · <a href="mailto:spvisionariesllc@gmail.com?subject=Lawn%20Care%20Enquiry">spvisionariesllc@gmail.com</a></p>
   <p class="fc">© 2025 S&amp;P Visionaries LLC. All rights reserved.</p>
 </footer>
 <div class="toast" id="toast"></div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script type="module">
+<script type="module">
 import{initializeApp}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import{getFirestore,collection,addDoc,getDocs,getDoc,doc,orderBy,query,serverTimestamp}
   from'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';

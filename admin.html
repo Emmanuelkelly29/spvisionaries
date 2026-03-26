@@ -69,7 +69,7 @@ img{display:block;max-width:100%}button{font-family:inherit;cursor:pointer}
 .btn{display:inline-flex;align-items:center;gap:.35rem;padding:.44rem .9rem;border-radius:50px;font-size:.76rem;font-weight:700;border:none;transition:all .18s;cursor:pointer}
 .btn-g{background:var(--g2);color:#fff}.btn-g:hover{background:var(--g1);transform:translateY(-1px)}
 .btn-a{background:var(--gold);color:var(--g1)}.btn-a:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(200,168,75,.4)}
-.btn-r{background:var(--redlt);color:var(--red);border:1px solid #faa}.btn-r:hover{background:#fcc}
+.btn-r{background:#c0392b;color:#fff;border:none}.btn-r:hover{background:#a93226}
 .btn-o{background:rgba(78,138,42,.1);color:var(--g3);border:1px solid var(--g6)}.btn-o:hover{background:rgba(78,138,42,.2)}
 .btn-sm{padding:.22rem .6rem;font-size:.68rem;border-radius:6px}
 .btn-xs{padding:.16rem .48rem;font-size:.64rem;border-radius:5px}
@@ -116,14 +116,14 @@ img{display:block;max-width:100%}button{font-family:inherit;cursor:pointer}
 .ba-acts{display:flex;gap:.35rem;flex-wrap:wrap}
 
 /* GALLERY */
-.gal-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(135px,1fr));gap:.7rem;margin-top:.9rem}
-.gal-item{position:relative;border-radius:var(--rs);overflow:hidden;aspect-ratio:1}
+.gal-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-top:.9rem}
+.gal-item{position:relative;border-radius:var(--rs);overflow:hidden;height:320px}
 .gal-item img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s}
 .gal-item:hover img{transform:scale(1.06)}
 .gal-cap{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(to top,rgba(18,42,8,.75),transparent);padding:.32rem .48rem;color:#fff;font-size:.63rem;font-weight:600;opacity:0;transition:opacity .2s}
 .gal-item:hover .gal-cap{opacity:1}
-.gal-del{position:absolute;top:.28rem;right:.28rem;background:rgba(170,35,35,.88);border:none;color:#fff;width:21px;height:21px;border-radius:50%;font-size:.66rem;display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0;transition:opacity .2s}
-.gal-item:hover .gal-del{opacity:1}
+.gal-del{position:absolute;top:.4rem;right:.4rem;background:rgba(180,30,30,.92);border:none;color:#fff;width:28px;height:28px;border-radius:50%;font-size:.75rem;display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:1;transition:background .2s;z-index:10}
+.gal-del:hover{background:rgba(210,20,20,1)!important}
 
 /* REVIEWS */
 .rev-list{display:flex;flex-direction:column;gap:.7rem;margin-top:.9rem}
@@ -200,7 +200,7 @@ img{display:block;max-width:100%}button{font-family:inherit;cursor:pointer}
       <div class="topbar-title">Admin Dashboard <small>S&amp;P Visionaries LLC</small></div>
     </div>
     <div class="topbar-r">
-      <button class="tbtn" onclick="window.open('index.html','_blank')">👁 View Public Site</button>
+      <button class="tbtn" onclick="openPublicSite()">👁 View Public Site</button>
       <button class="tbtn red" onclick="doLogout()">↩ Log Out</button>
     </div>
   </div>
@@ -241,7 +241,7 @@ img{display:block;max-width:100%}button{font-family:inherit;cursor:pointer}
             <button class="btn btn-a" onclick="showP('imgs',qb('imgs'))">📸 Manage All Images</button>
             <button class="btn btn-a" onclick="showP('ba',qb('ba'));oM('m-addba')">➕ Add Before/After</button>
             <button class="btn btn-a" onclick="showP('gal',qb('gal'));oM('m-addgal')">🖼 Add Gallery Photo</button>
-            <button class="btn btn-o" onclick="window.open('index.html','_blank')">👁 View Public Site</button>
+            <button class="btn btn-o" onclick="openPublicSite()">👁 View Public Site</button>
           </div>
         </div>
         <div class="card"><div class="card-hdr"><h3>Recent Before &amp; After</h3></div>
@@ -416,7 +416,7 @@ img{display:block;max-width:100%}button{font-family:inherit;cursor:pointer}
 <!-- ═══ FIREBASE ═══ -->
 <script type="module">
 import{initializeApp}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import{getFirestore,collection,addDoc,getDocs,deleteDoc,doc,updateDoc,orderBy,query,serverTimestamp,setDoc,getDoc}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import{getFirestore,collection,addDoc,getDocs,deleteDoc,doc,updateDoc,orderBy,query,serverTimestamp,setDoc,getDoc,deleteField}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 
 /* ══════════════════════════════════
@@ -473,7 +473,7 @@ async function up(path,file,progId,barId){
 
 /* ─ BA ─ */
 function mkBA(id,x){
-  const c=document.createElement('div');c.className='ba-c';
+  const c=document.createElement('div');c.className='ba-c';c.setAttribute('data-ba-id',id);
   c.innerHTML=`<div class="ba-halves">
     <div class="ba-half"><span class="ba-lbl" style="background:rgba(185,38,38,.88);color:#fff">Before</span><img src="${x.bURL}" loading="lazy"/></div>
     <div class="ba-half"><span class="ba-lbl" style="background:rgba(40,98,18,.9);color:#fff">After</span><img src="${x.aURL}" loading="lazy"/></div>
@@ -532,11 +532,28 @@ window.saveBA=async function(){
 };
 window.delBA=async function(id,bp,ap){
   if(!confirm('Delete this entry?'))return;
+
+  ['ba-grid','dash-ba'].forEach(gid=>{
+    const g=document.getElementById(gid);
+    if(!g)return;
+    const item=g.querySelector('[data-ba-id="'+id+'"]');
+    if(item)item.remove();
+    if(g.querySelectorAll('.ba-c').length===0)g.innerHTML='<div class="empty">No entries yet.</div>';
+  });
+
+  const countEl=document.getElementById('st-ba');
+  if(countEl){
+    const n=parseInt(countEl.textContent)||1;
+    countEl.textContent=Math.max(0,n-1);
+  }
+
   try{
     await deleteDoc(doc(db,'works',id));
-    /* old storage refs not needed with Cloudinary */
-    toast('Deleted.');loadBA();
-  }catch(e){toast('Error: '+e.message,1);}
+    toast('Deleted ✅');
+  }catch(e){
+    toast('Error: '+e.message,1);
+    loadBA();
+  }
 };
 
 /* ─ GALLERY ─ */
@@ -546,11 +563,15 @@ async function loadGal(){
   if(!s)return;
   document.getElementById('st-gal').textContent=s.size;
   const g=document.getElementById('gal-grid');g.innerHTML=s.empty?'<div class="empty">No photos yet.</div>':'';
-  s.forEach(d=>{const x=d.data(),c=document.createElement('div');c.className='gal-item';
-    c.innerHTML=`<img src="${x.url}" loading="lazy"/><div class="gal-cap">${esc(x.cap||'')}</div><button class="gal-del" onclick="delGal('${d.id}','${x.path||''}')">✕</button>`;
-    g.appendChild(c);});
+  s.forEach(d=>{
+    const x=d.data(),c=document.createElement('div');c.className='gal-item';
+    c.setAttribute('data-gal-id',d.id);
+    c.innerHTML=`<img src="${x.url}" loading="lazy"/><div class="gal-cap">${esc(x.cap||'')}</div><button class="gal-del" onclick="delGal('${d.id}','${x.path||''}',this)">✕</button>`;
+    g.appendChild(c);
+  });
 }
 window.loadGal=loadGal;
+
 window.addGal=async function(){
   const f=document.getElementById('addgal-f').files[0],cap=document.getElementById('addgal-cap').value.trim();
   if(!f){toast('Select a photo.',1);return;}
@@ -564,9 +585,32 @@ window.addGal=async function(){
     loadGal();
   }catch(e){toast('Error: '+e.message,1);}
 };
-window.delGal=async function(id,path){
+
+window.delGal=async function(id,path,btn){
   if(!confirm('Remove this photo?'))return;
-  try{await deleteDoc(doc(db,'gallery',id));toast('Removed.');loadGal();}catch(e){toast('Error: '+e.message,1);}
+
+  // Remove from DOM instantly
+  const item=btn?btn.closest('.gal-item'):document.querySelector('[data-gal-id="'+id+'"]');
+  if(item)item.remove();
+
+  const countEl=document.getElementById('st-gal');
+  if(countEl){
+    const n=parseInt(countEl.textContent)||1;
+    countEl.textContent=Math.max(0,n-1);
+  }
+
+  const g=document.getElementById('gal-grid');
+  if(g&&g.querySelectorAll('.gal-item').length===0){
+    g.innerHTML='<div class="empty">No photos yet.</div>';
+  }
+
+  try{
+    await deleteDoc(doc(db,'gallery',id));
+    toast('Photo deleted ✅');
+  }catch(e){
+    toast('Delete failed: '+e.message,1);
+    loadGal();
+  }
 };
 
 /* ─ REVIEWS ─ */
@@ -784,7 +828,7 @@ async function saveImgURLToFirestore(k,url){
 }
 async function clearImgURLFromFirestore(k){
   if(!db)return;
-  const update={};update[k]=null;
+  const update={};update[k]=deleteField();
   await setDoc(doc(db,'settings','images'),update,{merge:true}).catch(()=>{});
 }
 window.replaceImg=function(k){
@@ -810,12 +854,33 @@ window.replaceImg=function(k){
   };
   document.body.appendChild(inp);inp.click();setTimeout(()=>document.body.removeChild(inp),5000);
 };
+
+window.delGal = async function(id,path,btn){
+  if(!confirm('Remove this photo?'));
+
+  try{
+    await deleteDoc(doc(db,'gallery',id));
+
+    console.log("DELETED SUCCESSFULLY");
+
+    toast('Photo deleted ✅');
+    loadGal();
+
+  }catch(e){
+    console.error("DELETE ERROR:", e);
+    toast('Delete failed: '+e.message,1);
+  }
+};
+
 window.resetImg=async function(k){
-  if(!confirm('Delete this photo and restore the original placeholder?'))return;
-  delete window.IMGS[k];
-  renderImgs();
-  await clearImgURLFromFirestore(k);
-  toast('Photo removed — original restored ✅');
+  if(!confirm('Delete this photo and do not restore the original?'));
+  try{
+    await clearImgURLFromFirestore(k);
+    delete window.IMGS[k];
+    renderImgs();
+    renderSvcs();
+    toast('Photo deleted ✅');
+  }catch(e){toast('Error: '+e.message,1);}
 };
 
 /* ─ LOAD FIREBASE SETTINGS ─ */
@@ -848,6 +913,44 @@ window.addEventListener('load',()=>{loadBA();loadGal();loadRevs();renderSvcs();r
 const ADMIN_EMAIL    = 'spvisionariesllc@gmail.com';
 const ADMIN_PASSWORD = 'SPVisionaries2025!';
 /* ════════════════════ */
+
+window.openPublicSite = function () {
+  try {
+    const currentUrl = window.location.origin + window.location.pathname;
+
+    let publicUrl;
+
+    if (currentUrl.includes("admin.html")) {
+      publicUrl = currentUrl.replace("admin.html", "index.html");
+    } else {
+      publicUrl = currentUrl.substring(0, currentUrl.lastIndexOf("/") + 1) + "index.html";
+    }
+
+    // Open in same tab (more reliable)
+    window.location.href = publicUrl;
+
+  } catch (err) {
+    console.error("Error opening public site:", err);
+    alert("Could not open public site. Check file paths.");
+  }
+};
+
+/* ══ PUBLIC SITE URL ══ */
+/*window.openPublicSite = function(){
+  var loc = window.location.href;
+  // Strip query string and hash
+  loc = loc.split('?')[0].split('#')[0];
+  var url;
+  if(loc.indexOf('admin.html') !== -1){
+    // Replace admin.html with index.html — works everywhere
+    url = loc.replace('admin.html', 'index.html');
+  } else {
+    // Fallback: go to same directory + index.html
+    url = loc.substring(0, loc.lastIndexOf('/') + 1) + 'index.html';
+  }
+  window.open(url, '_blank');
+};
+/* ═══════════════════════ */
 
 window.IMGS={};
 
@@ -890,7 +993,7 @@ function doLogout(){
 }
 window.doLogout=doLogout;
 
-// Auto-restore if already logged in
+// Auto-resto44re if already logged in
 (function(){
   if(sessionStorage.getItem('spv_admin')==='1'){
     document.getElementById('LG').classList.add('hidden');
