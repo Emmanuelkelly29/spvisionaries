@@ -526,6 +526,8 @@ window.SUB=async function(){
   }catch(e){T('Error: '+e.message,1);}
   btn.disabled=false;btn.textContent='Submit Review ★';
 };
+window.OM=function(){const md=document.getElementById('md'),mb=document.getElementById('mb');if(md)md.classList.add('on');if(mb)mb.classList.add('on');};
+window.CM=function(){const md=document.getElementById('md'),mb=document.getElementById('mb');if(md)md.classList.remove('on');if(mb)mb.classList.remove('on');};
 window.addEventListener('load',()=>{loadImages();loadBA();loadGal();loadRevs();});
 </script>
 </body>
